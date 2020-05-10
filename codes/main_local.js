@@ -1,6 +1,7 @@
+//#region global imports
 require("dotenv").config();
 const axios = require("axios");
-//#region configures
+//#region express configures
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");

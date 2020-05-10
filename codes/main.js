@@ -1,9 +1,13 @@
-const DButils = require("./DButils old");
+//#region global imports
+const DButils = require("./DButils");
 const axios = require("axios");
-
+const CryptoJS = require("crypto-js");
 require("dotenv").config();
-//#region configures
+//#endregion
+//#region express configures
 var express = require("express");
+const asyncHandler = require("express-async-handler");
+// require("express-async-errors");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
@@ -23,47 +27,73 @@ app.use(express.static(path.join(__dirname, "public"))); //To serve static files
 var port = process.env.PORT || "3000";
 //#endregion
 
-app.post("/users/Register", (req, res) => {
-  // parameters exists
-  // valid parameters
-  // username exists
+app.post(
+  "/users/Register",
+  asyncHandler(async (req, res) => {
+    // parameters exists
+    // valid parameters
+    // username exists
+    const users = await DButils.execQuery("SELECT username FROM dbo.users");
 
-  // before: if (db.find((x) => x.name === req.body.name)) throw new Error("Name exists");
-  // after:
+    if (users.find((x) => x.username === req.body.username))
+      throw new Error("Username taken");
 
-  // add the new username
-  // before: var newUser = { ...req.body, id: db.length };   db.push(newUser);
-  // after:
+    // add the new username
+    let hash_password = CryptoJS.SHA3(req.body.password).toString(
+      CryptoJS.enc.Base64
+    );
+    await DButils.execQuery(
+      `INSERT INTO dbo.users (username, password) VALUES ('${req.body.username}', '${hash_password}')`
+    );
 
-  res.status(201).send("user created");
-  // db.push(req.body)
-});
+    res.status(201).send("user created");
+  })
+);
 
-app.post("/users/Login", (req, res) => {
-  // check that username exists
-  // before: if (!db.users.find((x) => x.name === req.body.name))
-  //   throw new Error("password or Name is not correct");
-  // after:
+app.post(
+  "/users/Login",
+  asyncHandler(async (req, res) => {
+    // check that username exists
+    // before: if (!db.users.find((x) => x.name === req.body.name))
+    //   throw new Error("password or Name is not correct");
+    // after:
+    const users = await DButils.execQuery("SELECT username FROM dbo.users");
 
-  // check that the password is correct
-  // before: var user = db.users.find((x) => x.name === req.body.name);
+    if (users.find((x) => x.username === req.body.username))
+      throw new Error("Username taken");
 
-  if (req.body.password !== user.password) {
-    throw new Error("password or Name is not correct");
-  }
+    // check that the password is correct
+    // before: var user = db.users.find((x) => x.name === req.body.name);
 
-  // Set cookie
-  res.cookie("cookieName", "cookieValue", cookies_options); // options is optional
+    if (req.body.password !== user.password) {
+      throw new Error("password or Name is not correct");
+    }
 
-  // return cookie
-  res.status(200).send("login succeeded");
-});
+    // Set cookie
+    res.cookie("cookieName", "cookieValue", cookies_options); // options is optional
 
-app.get("/recipe/getRecipe", (req, res) => {
-  // enter your code here
-});
+    // return cookie
+    res.status(200).send("login succeeded");
+  })
+);
 
-app.use((err, req, res, next) => {
+app.get(
+  "/recipe/getRecipe",
+  asyncHandler(async (req, res) => {
+    const recipe = await axios.get(
+      `https://api.spoonacular.com/recipes/${req.query.id}/information`,
+      {
+        params: {
+          includeNutrition: false,
+          apiKey: process.env.spooncular_apiKey
+        }
+      }
+    );
+    res.send(recipe.data);
+  })
+);
+
+app.use((err, req, res) => {
   res.status(500).json({
     message: err.message
   });
