@@ -60,13 +60,12 @@ app.get("/recipe/getRecipe", (req, res) => {
   axios
     .get(`https://api.spoonacular.com/recipes/${req.query.id}/information`, {
       params: {
-        apiKey: "c195650e68754ae3ad17041e6f2a462d"
+        apiKey: process.env.spooncular_apiKey
       }
     })
     .then((result) => {
-      res.send(result);
+      res.send(result.data);
     });
-  // return to client
 });
 
 app.use((err, req, res, next) => {

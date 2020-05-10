@@ -14,7 +14,7 @@ sql
     return pool.request().query("select * from users");
   })
   .then((result) => {
-    console.log(result.result);
+    console.log(result);
   })
   .catch((err) => {
     // ... error checks
