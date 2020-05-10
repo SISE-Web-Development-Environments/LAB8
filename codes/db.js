@@ -1,6 +1,6 @@
 exports.users = [
   {
-    id: 1,
+    userId: 1,
     name: "Eran",
     password: "aa"
   }

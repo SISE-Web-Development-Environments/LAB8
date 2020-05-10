@@ -1,4 +1,5 @@
 require("dotenv").config();
+const axios = require("axios");
 //#region configures
 var express = require("express");
 var path = require("path");
@@ -50,6 +51,22 @@ app.post("/users/Login", (req, res) => {
 
   // return cookie
   res.status(200).send("login succeeded");
+});
+
+app.get("/recipe/getRecipe", (req, res) => {
+  // get id from client
+  console.log(req.query.id);
+  // axios: request spooncular api
+  axios
+    .get(`https://api.spoonacular.com/recipes/${req.query.id}/information`, {
+      params: {
+        apiKey: "c195650e68754ae3ad17041e6f2a462d"
+      }
+    })
+    .then((result) => {
+      res.send(result);
+    });
+  // return to client
 });
 
 app.use((err, req, res, next) => {

@@ -1,4 +1,4 @@
-// const allGood = true;
+const allGood = undefined;
 
 const p = new Promise((resolve, reject) => {
   if (allGood) resolve("success");
