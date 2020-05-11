@@ -13,9 +13,11 @@ const config = {
 };
 
 exports.execQuery = async function (query) {
+  var pool = undefined;
+  var result = undefined;
   try {
-    let pool = await sql.connect(config);
-    let result = await pool.request().query(query);
+    pool = await sql.connect(config);
+    result = await pool.request().query(query);
     return result.recordset;
   } catch (error) {
     throw error;
