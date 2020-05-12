@@ -12,19 +12,31 @@ const config = {
   }
 };
 
+const pool = new sql.ConnectionPool(config);
+const poolConnect = pool.connect();
+
 exports.execQuery = async function (query) {
-  var pool = undefined;
-  var result = undefined;
+  await poolConnect;
   try {
-    pool = await sql.connect(config);
-    result = await pool.request().query(query);
+    var result = await pool.request().query(query);
     return result.recordset;
-  } catch (error) {
-    throw error;
-  } finally {
-    if (pool) pool.close();
+  } catch (err) {
+    console.error("SQL error", err);
+    throw err;
   }
 };
+
+// process.on("SIGINT", function () {
+//   if (pool) {
+//     pool.close(() => console.log("connection pool closed"));
+//   }
+// });
+
+// poolConnect.then(() => {
+//   console.log("pool closed");
+
+//   return sql.close();
+// });
 
 // exports.execQuery = function (query) {
 //   return new Promise((resolve, reject) => {
