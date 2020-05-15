@@ -52,28 +52,43 @@ app.post("/users/Register", async (req, res, next) => {
   }
 });
 
-app.post("/users/Login", async (req, res) => {
-  // check that username exists
-  // before: if (!db.users.find((x) => x.name === req.body.name))
-  //   throw new Error("password or Name is not correct");
-  // after:
-  const users = await DButils.execQuery("SELECT username FROM dbo.users");
+app.post("/users/Login", async (req, res, next) => {
+  try {
+    // check that username exists
+    // before: if (!db.users.find((x) => x.name === req.body.name))
+    //   throw new Error("password or Name is not correct");
+    // after:
+    const users = await DButils.execQuery("SELECT username FROM dbo.users");
 
-  if (users.find((x) => x.username === req.body.username))
-    throw new Error("Username taken");
+    if (!users.find((x) => x.username === req.body.username))
+      throw { status: 401, message: "Username or Password incorrect" };
 
-  // check that the password is correct
-  // before: var user = db.users.find((x) => x.name === req.body.name);
+    // check that the password is correct
+    // before: var user = db.users.find((x) => x.name === req.body.name);
+    // after:
+    const user = (
+      await DButils.execQuery(
+        `SELECT * FROM dbo.users WHERE username = '${req.body.username}'`
+      )
+    )[0];
+    // user = user[0];
+    console.log(user);
 
-  if (req.body.password !== user.password) {
-    throw new Error("password or Name is not correct");
+    let hash_password = CryptoJS.SHA3(req.body.password).toString(
+      CryptoJS.enc.Base64
+    );
+    if (hash_password !== user.password) {
+      throw { status: 401, message: "Username or Password incorrect" };
+    }
+
+    // Set cookie
+    res.cookie("cookieName", "cookieValue", cookies_options); // options is optional
+
+    // return cookie
+    res.status(200).send("login succeeded");
+  } catch (error) {
+    next(error);
   }
-
-  // Set cookie
-  res.cookie("cookieName", "cookieValue", cookies_options); // options is optional
-
-  // return cookie
-  res.status(200).send("login succeeded");
 });
 
 app.get("/recipe/getRecipe", async (req, res) => {

@@ -1,33 +1,11 @@
-const db = require("../db");
+const path = require("path");
+const fs_promises = require("fs").promises;
+const task1 = require("./1_task_answer");
 
-function getUser(id) {
-  return new Promise((resolve, reject) => {
-    let user = db.users.find((x) => x.userId == id);
-    if (user) resolve(user);
-    else reject(new Error("user not found"));
-  });
-}
-
-function getInterests(id) {
-  return new Promise((resolve, reject) => {
-    let interests = db.interests.find((x) => x.userId == id);
-    if (interests) resolve(interests);
-    else reject(new Error("interests not found"));
-  });
-}
-
-function getLocation(interest) {
-  return new Promise((resolve, reject) => {
-    let location = db.locations.find((x) => x.interest == interest);
-    if (location) resolve(location);
-    else reject(new Error("location not found"));
-  });
-}
-
-getUser(1)
-  .then((user) => getInterests(user.userId))
-  .then((interests) => getLocation(interests.interests[0]))
-  .then((location) => console.log(location))
-  .catch((error) => console.log(error.message));
-
-// Answer
+task1
+  .factorial_promise(65)
+  .then((result) =>
+    fs_promises.writeFile(path.join(__dirname, "message.txt"), result)
+  )
+  .then(() => console.log("file created"))
+  .catch((err) => console.log(err));
